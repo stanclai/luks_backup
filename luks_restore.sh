@@ -147,7 +147,7 @@ case "$ARCHTYPE" in
 esac
 
 PHRASE=${BASENAME}@${DATE}-${NONCE}
-PASSWD=`echo -n "$PHRASE" | sha256sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64`
+export PASSWD=`echo -n "$PHRASE" | sha256sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64`
 
 openssl aes-256-ofb -d -in $FULLNAME -pass env:PASSWD | tar -x $D >/dev/null 2>&1 && {
     [ $HMAC -eq 0 ] && echo "Fine. Archive file was renamed, but its content is intact.";

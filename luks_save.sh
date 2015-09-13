@@ -197,7 +197,7 @@ DATA=${BASENAME}.${DATE}.${EXT}
 echo -n ""
 NONCE=`/lib/cryptsetup/askpass "Enter passphrase to encrypt archive:"`
 PHRASE=${BASENAME}@${DATE}-${NONCE}
-PASSWD=`echo -n "$PHRASE" | sha256sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64`
+export PASSWD=`echo -n "$PHRASE" | sha256sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64`
 # or
 #PASSWD=`echo -n "$PHRASE" | hashrat -rl -sha256 -64`
 # or
@@ -205,21 +205,22 @@ PASSWD=`echo -n "$PHRASE" | sha256sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | bas
 # or
 #PASSWD=`echo -n "$PHRASE" | rhash -p '%B{sha-256}\n' -`
 
-tar -c $C $DIRNAME | openssl aes-256-ofb -out $DATA -pass env:PASSWD
+tar -c $C $DIRNAME | openssl aes-256-ofb -out $DATA -pass env:PASSWD && {
 
-HASH=`sha1sum <$DATA | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
-NAMETOSIGN=${BASENAME}.${DATE}.${HASH}.${EXT}.${NONCE}
-SIG=`echo -n "$NAMETOSIGN" | md5sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
-NEWNAME=${BASENAME}.${DATE}.${HASH}.${SIG}.${EXT}
+    HASH=`sha1sum <$DATA | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+    NAMETOSIGN=${BASENAME}.${DATE}.${HASH}.${EXT}.${NONCE}
+    SIG=`echo -n "$NAMETOSIGN" | md5sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+    NEWNAME=${BASENAME}.${DATE}.${HASH}.${SIG}.${EXT}
 
-mv $DATA $NEWNAME
-if [ -x "`which par2`" ]; then
-    PAR2=1
-    echo "Par2 found. Creating recovery volumes..."
-    par2 c -r7 -a $NEWNAME $NEWNAME
-else
-    echo "Par2 not found. In case of damage recovery would not be possible."
-fi
+    mv $DATA $NEWNAME
+    if [ -x "`which par2`" ]; then
+        PAR2=1
+        echo "Par2 found. Creating recovery volumes..."
+        par2 c -r7 -a $NEWNAME $NEWNAME
+    else
+        echo "Par2 not found. In case of damage recovery would not be possible."
+    fi
+}
 
 cd $DIRNAME
 $RM $FILESET >/dev/null 2>&1
