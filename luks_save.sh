@@ -41,7 +41,9 @@ DEVICE="$1"
 BASENAMEMAXCHARS=40
 
 GenBaseName() {
-    if [ -x "`which hostname`" ]; then
+    if [ -n "$1" ]; then
+        BASENAME=`echo $1 | cut -c 1-$BASENAMEMAXCHARS`
+    elif [ -x "`which hostname`" ]; then
         BASENAME=`hostname`
     elif [ -x "`which date`" ]; then
         BASENAME=`date | md5sum | sed -e 's/\s\+-\s*//'`
@@ -53,35 +55,46 @@ GenBaseName() {
     echo "Basename set to $BASENAME";
 }
 
-PAR="$2"
-if [ -z "$PAR" ]; then
-    GenBaseName
-    KEYFILE=""
-else
+GetKeyFile() {
+    PAR="$1"
     # ${PAR:0:11} is Bash'ism. Doesn't work in sh.
     SUBPAR=`echo $PAR | cut -c 1-11`
     case "$SUBPAR" in
         "-k"|"--key-file")
-            KEYFILE="$3"
-            if [ -z "$4" ]; then
-                GenBaseName
-            else
-                BASENAME=`echo $4 | cut -c 1-$BASENAMEMAXCHARS`
-            fi
+            KEYFILE="$2"
+            return 2
             ;;
         "--key-file=")
             KEYFILE=`echo $PAR | cut -c 12-`
-            if [ -z "$3" ]; then
-                GenBaseName
-            else
-                BASENAME=`echo $3 | cut -c 1-$BASENAMEMAXCHARS`
-            fi
+            return 1
             ;;
         *)
-            BASENAME=`echo $PAR | cut -c 1-$BASENAMEMAXCHARS`
+            return 0
             ;;
     esac
+}
+
+if [ -z "$2" ]; then
+    GenBaseName
+    KEYFILE=""
+else
+    GetKeyFile $2 $3
+    case $? in
+        0)
+            GenBaseName $2;
+            GetKeyFile $3 $4;
+            ;;
+        1)
+            GenBaseName $3
+            ;;
+        2)
+            GenBaseName $4
+            ;;
+        *)
+            exit -1
+    esac
 fi
+
 
 if [ -x "`which scrub`" ]; then
     RM="scrub -r"
