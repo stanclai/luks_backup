@@ -216,7 +216,7 @@ tar -c $C $DIRNAME | openssl aes-256-ofb -out $DATA -pass env:PASSWD && {
     if [ -x "`which par2`" ]; then
         PAR2=1
         echo "Par2 found. Creating recovery volumes..."
-        par2 c -r7 -a $NEWNAME $NEWNAME
+        par2 c -r7 $NEWNAME
     else
         echo "Par2 not found. In case of damage recovery would not be possible."
     fi
@@ -238,7 +238,7 @@ else
     echo "manager."
     echo "If you want to protect your backup archive, you may want to install"
     echo "'par2' and add some redundancy volumes, e.g. somehow as"
-    echo "par2 c -r7 -a <archive_file_name> <archive_file_name_again>"
+    echo "par2 c -r7 <archive_file_name>"
 fi
 
 exit 0

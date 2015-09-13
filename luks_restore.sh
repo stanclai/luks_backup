@@ -55,7 +55,7 @@ fi
 
 HEXHASH=`echo "$HASH=" | tr '_-' '/+' | base64 -d | xxd -ps`
 
-echo "$HEXHASH $FULLNAME" | sha1sum -c >/dev/null 2>&1 && {
+echo "$HEXHASH  $FULLNAME" | sha1sum -c >/dev/null 2>&1 && {
     echo "Archive file is safe."
 } || {
     if [ $HMAC -eq 1 ]; then
