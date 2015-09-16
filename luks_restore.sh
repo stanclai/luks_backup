@@ -39,13 +39,20 @@ $(echo "$FULLNAME")
 EOF
 IFS=$IFS_
 
-#[ -z "$SIG" -o ${#SIG} -ne 22 ] && { echo "Invalid signature. Exiting."; exit 2; }
-#[ -z "$HASH" -o ${#HASH} -ne 27 ] && { echo "Invalid checksum. Exiting."; exit 2; }
+[ -z "$SIG" -o ${#SIG} -ne 22 ] && { echo "Invalid signature. Exiting."; exit 2; }
+[ -z "$HASH" -o ${#HASH} -ne 27 ] && { echo "Invalid checksum. Exiting."; exit 2; }
 
 NONCE=`/lib/cryptsetup/askpass "Enter passphrase to decrypt archive:"`
 
-TEST=`echo -n "$BASENAME.$DATE.$HASH.$EXT.$NONCE" | md5sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
-if [ "$TEST" = "$SIG" ]; then
+TEST=`echo -n "$BASENAME.$DATE.$HASH.$EXT" | openssl md5 -hmac "$NONCE" -binary | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+
+# This method of filename integrity verification is deprecated.
+# It's incompatible with new version of the archiving script.
+# But we have to check against it if someone saved the backup
+# with old version of the 'luks_save.sh' script.
+OLD_TEST=`echo -n "$BASENAME.$DATE.$HASH.$EXT.$NONCE" | md5sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+
+if [ "$TEST" = "$SIG" -o "$OLD_TEST" = "$SIG" ]; then
     echo "Archive name is valid."
     HMAC=1
 else

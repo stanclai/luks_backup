@@ -197,19 +197,32 @@ DATA=${BASENAME}.${DATE}.${EXT}
 echo -n ""
 NONCE=`/lib/cryptsetup/askpass "Enter passphrase to encrypt archive:"`
 PHRASE=${BASENAME}@${DATE}-${NONCE}
-export PASSWD=`echo -n "$PHRASE" | sha256sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64`
+export PASSWD=`echo -n "$PHRASE" | openssl sha256 -binary | base64`
 # or
-#PASSWD=`echo -n "$PHRASE" | hashrat -rl -sha256 -64`
+#export PASSWD=`echo -n "$PHRASE" | sha256sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64`
 # or
-#PASSWD=`echo -n "$PHRASE" | sha256 | base64` #hashalot
+#export PASSWD=`echo -n "$PHRASE" | hashrat -rl -sha256 -64`
 # or
-#PASSWD=`echo -n "$PHRASE" | rhash -p '%B{sha-256}\n' -`
+#export PASSWD=`echo -n "$PHRASE" | sha256 | base64` #hashalot
+# or
+#export PASSWD=`echo -n "$PHRASE" | rhash -p '%B{sha-256}\n' -`
 
 tar -c $C $DIRNAME | openssl aes-256-ofb -out $DATA -pass env:PASSWD && {
 
-    HASH=`sha1sum <$DATA | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
-    NAMETOSIGN=${BASENAME}.${DATE}.${HASH}.${EXT}.${NONCE}
-    SIG=`echo -n "$NAMETOSIGN" | md5sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+    HASH=`openssl sha1 -binary <$DATA | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+#    HASH=`sha1sum <$DATA | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+#    HASH=`hashrat -sha1 -64 $DATA | sed -e 's/=//g' | tr '+/' '-_'`
+    NAMETOSIGN=${BASENAME}.${DATE}.${HASH}.${EXT}
+    SIG=`echo -n "$NAMETOSIGN" | openssl md5 -hmac "${NONCE}" -binary | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+#    or
+#    SIG=`echo -n "$NAMETOSIGN" | hashrat -md5 -64 | sed -e 's/=//g' | tr '+/' '-_'`
+
+#
+# Attention! This is deprecated approach to sign the file name.
+# It's incompatible with new version of backup restore script.
+#    NAMETOSIGN=${BASENAME}.${DATE}.${HASH}.${EXT}.${NONCE}
+#    SIG=`echo -n "$NAMETOSIGN" | md5sum | sed -e 's/\s\+-\s*//' | xxd -r -ps | base64 | sed -e 's/=//g' | tr '+/' '-_'`
+#
     NEWNAME=${BASENAME}.${DATE}.${HASH}.${SIG}.${EXT}
 
     mv $DATA $NEWNAME
