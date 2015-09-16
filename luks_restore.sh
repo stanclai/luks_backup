@@ -78,13 +78,11 @@ echo "$HEXHASH  $FULLNAME" | sha1sum -c >/dev/null 2>&1 && {
             case $? in
                 0)
                     echo "Data are safe. Continue."
-                    break
                     ;;
                 1)
                     echo "Repair is possible."
                     par2 r $FULLNAME.par2
                     echo "Continue with decryption..."
-                    break
                     ;;
                 2)
                     echo "Repair is impossible. Exiting."
@@ -110,42 +108,34 @@ case "$ARCHTYPE" in
     "Z")
         D="-Z"
         [ -x "`which uncompress`" -o -x "`which uncompress.real`" ] || NODECOMPRESSOR=1
-        break
         ;;
     "gz")
         D="-z"
         [ -x "`which gunzip`" -o -x "`which gzip`" ] || NODECOMPRESSOR=1
-        break
         ;;
     "bz2")
         D="-j"
         [ -x "`which bunzip2`" -o -x "`which zip2`" ] || NODECOMPRESSOR=1
-        break
         ;;
     "xz")
         D="-J"
         [ -x "`which unxz`" -o -x "`which xz`" ] || NODECOMPRESSOR=1
-        break
         ;;
     "lzip")
         D="--lzip"
         [ -x "`which lunzip`" -o -x "`which lzip`" ] || NODECOMPRESSOR=1
-        break
         ;;
     "lzma")
         # the same s..t, that xz... nevertheless, here we are.
         D="--lzma"
         [ -x "`which unlzma`" -o -x "`which lzmadec`" -o -x "`which lzma`" -o -x "`which unxz`" -o -x "`which xz`" ] || NODECOMPRESSOR=1
-        break
         ;;
     "lzo"|"lzop")
         D="--lzop"
         [ -x "`which lzop`" ] || NODECOMPRESSOR=1
-        break
         ;;
     "") # just uncompressed tar
         D=""
-        break
         ;;
     *)
         echo "Unknown archive type. Exiting."
