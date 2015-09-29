@@ -2,3 +2,5 @@
 !.gitignore
 !luks_restore.sh
 !luks_save.sh
+!LICENSE
+!README.md

@@ -3,7 +3,7 @@
 [ $# -eq 0 -o "$1" = "--help" -o "$1" = "-h" -o "$1" = "/h" ] && {
 cat <<EOF
 Usage:
-$0 <archive_file_name> [YES_I_WANT_TO_AUTOMAGICALLY_RESTORE_MY_LUKS_HEADER <luks_device>]
+`basename $0` <archive_file_name> [YES_I_WANT_TO_AUTOMAGICALLY_RESTORE_MY_LUKS_HEADER <luks_device>]
 
 <archive_file_name>     Name of the encrypted archive with LUKS header backup
 YES_I_WANT_TO_AUTOMAGICALLY_RESTORE_MY_LUKS_HEADER

@@ -3,7 +3,7 @@
 [ $# -eq 0 -o "$1" = "--help" -o "$1" = "-h" -o "$1" = "/h" ] &&  {
 cat <<EOF
 Usage:
-$0 <path_to_LUKS_device> [<basename_for_archive>] [--key-file|-k <path_to_keyfile>]
+`basename $0` <path_to_LUKS_device> [<basename_for_archive>] [--key-file|-k <path_to_keyfile>]
 
 <path_to_LUKS_device>   Full path to encrypted device containing LUKS header
 <basename_for_archive>  String identifying all fileset in the archive.
